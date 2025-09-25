@@ -1,0 +1,53 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.0.2
+  slack: circleci/slack@4.6.1
+
+jobs:
+  nuxt-build:
+    docker:
+      - image: node:18
+
+    resource_class: small
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pnpm-lock.yaml" }}
+
+      - run:
+          name: Install Pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@8.6.12 --activate
+
+      - run:
+          name: Install Dependencies
+          command: |
+            pnpm install
+      
+      - save_cache:
+          key: v1-dependencies-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - ./node_modules
+
+      - run:
+          name: Run ESLint Check
+          command: pnpm lint
+
+      - run:
+          name: Build App
+          command: pnpm build
+
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+
+workflows:
+  my-custom-workflow:
+    jobs:
+      - nuxt-build:
+          context:
+            - backend-secrets
