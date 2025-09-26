@@ -1,4 +1,347 @@
-<script lang="ts"></script>
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router";
+import Pagination from "~/components/global/Pagination.vue";
+const route = useRoute();
+
+definePageMeta({
+  layout: "admin",
+  breadcrumb: (route: { params: { id: any } }) => `Detail #${route.params.id}`,
+});
+
+// ===== Dummy data untuk tabel =====
+type ProductRow = {
+  id: number | string;
+  title: string;
+  price: number;
+  image: string;
+  category: string;
+  desc: string;
+};
+
+const page = ref(1);
+const pageSize = ref(10);
+const total = computed(() => productRows.length);
+
+const pagedRows = computed(() => {
+  const start = (page.value - 1) * pageSize.value;
+  return productRows.slice(start, start + pageSize.value);
+});
+
+const productRows: ProductRow[] = [
+  {
+    id: 1001,
+    title: "Kopi Arabica Gayo 200g",
+    price: 75000,
+    image: "https://picsum.photos/seed/1001/80/80",
+    category: "Beverage",
+    desc: "Biji kopi arabica profil fruity-choco.",
+  },
+  {
+    id: 1002,
+    title: "Teh Jasmine Premium 50gr",
+    price: 42000,
+    image: "https://picsum.photos/seed/1002/80/80",
+    category: "Beverage",
+    desc: "Aroma melati segar untuk relaksasi.",
+  },
+  {
+    id: 2001,
+    title: "Granola Honey Almond 300g",
+    price: 56000,
+    image: "https://picsum.photos/seed/2001/80/80",
+    category: "Snack",
+    desc: "Granola renyah manis alami madu.",
+  },
+  {
+    id: 3003,
+    title: "Sambal Matah Homemade 150g",
+    price: 28000,
+    image: "https://picsum.photos/seed/3003/80/80",
+    category: "Condiment",
+    desc: "Pedas segar khas Bali.",
+  },
+  {
+    id: "SKU-9X1",
+    title: "Nasi Box Ayam Bakar (Paket A)",
+    price: 35000,
+    image: "https://picsum.photos/seed/9x1/80/80",
+    category: "Catering",
+    desc: "Nasi, ayam bakar, lalap, sambal, buah, air mineral.",
+  },
+];
+
+const fmtIDR = (v: number) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(v);
+
+// ===== State & fungsi modal detail =====
+const isDetailOpen = ref(false);
+const selected = ref<ProductRow | null>(null);
+
+const openDetail = (row: ProductRow) => {
+  selected.value = row;
+  isDetailOpen.value = true;
+  if (process.client) document.documentElement.style.overflow = "hidden";
+};
+const closeDetail = () => {
+  isDetailOpen.value = false;
+  selected.value = null;
+  if (process.client) document.documentElement.style.overflow = "";
+};
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === "Escape" && isDetailOpen.value) closeDetail();
+};
+onMounted(() => window.addEventListener("keydown", onKeydown));
+onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
+
+const curIndex = computed(() =>
+  selected.value
+    ? productRows.findIndex((p) => p.id === selected.value?.id)
+    : -1
+);
+const hasPrev = computed(() => curIndex.value > 0);
+const hasNext = computed(
+  () => curIndex.value >= 0 && curIndex.value < productRows.length - 1
+);
+const prev = () => {
+  if (hasPrev.value) openDetail(productRows[curIndex.value - 1]);
+};
+const next = () => {
+  if (hasNext.value) openDetail(productRows[curIndex.value + 1]);
+};
+</script>
+
 <template>
-    <div></div>
+  <div class="mx-auto max-w-7xl space-y-6 px-4 py-4">
+    <!-- Breadcrumb (kalau layout belum render global) -->
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-semibold">All Products</h1>
+      <Breadcrump variant="admin" :max="4" />
+    </div>
+    <!-- Header + Filter ringan -->
+    <div class="container rounded-lg bg-gray-100 p-2">
+      <!-- Tables / lists -->
+      <div class="flex justify-between items-center">
+        <div class="mb-3">
+          <h1 class="text-xl font-semibold">List Products</h1>
+          <p class="text-sm text-gray-500 font-light">
+            Track your store's progress to boost your sales.
+          </p>
+        </div>
+        <div class="mb-3 w-full max-w-sm">
+          <div class="relative">
+            <span
+              class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <Iconify
+                icon="material-symbols-light:search"
+                class="h-5 w-5 text-slate-400"
+              />
+            </span>
+            <input
+              type="text"
+              placeholder="Search product..."
+              class="w-full rounded-md border border-black bg-white py-2 pl-10 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <button
+            class="rounded-md border flex items-center border-gray-200 bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
+            @click="openDetail(p)"
+          >
+            <Iconify icon="material-symbols:add-rounded" class="w-5 h-5" />
+            Add Product
+          </button>
+        </div>
+      </div>
+      <div class="grid gap-4 lg:grid-cols-3">
+        <div class="lg:col-span-3">
+          <div
+            class="overflow-x-auto rounded-lg border border-gray-200 bg-white"
+          >
+            <table class="min-w-full table-auto text-sm">
+              <thead class="bg-gray-50 text-gray-700">
+                <tr>
+                  <th class="px-4 py-3 text-left font-semibold">No</th>
+                  <th class="px-4 py-3 text-left font-semibold">ID</th>
+                  <th class="px-4 py-3 text-left font-semibold">Title</th>
+                  <th class="px-4 py-3 text-left font-semibold">Price</th>
+                  <th class="px-4 py-3 text-left font-semibold">Image</th>
+                  <th class="px-4 py-3 text-left font-semibold">Category</th>
+                  <th class="px-4 py-3 text-left font-semibold">Desc</th>
+                  <th class="px-4 py-3 text-left font-semibold">Action</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200 text-gray-700">
+                <tr
+                  v-for="(p, i) in productRows"
+                  :key="p.id"
+                  class="hover:bg-gray-50"
+                >
+                  <td class="px-4 py-3">{{ i + 1 }}</td>
+                  <td class="px-4 py-3 font-mono text-xs text-gray-500">
+                    {{ p.id }}
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="max-w-[260px] truncate font-medium">
+                      {{ p.title }}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 font-semibold">{{ fmtIDR(p.price) }}</td>
+                  <td class="px-4 py-3">
+                    <img
+                      :src="p.image"
+                      alt=""
+                      class="h-12 w-12 rounded-md object-cover ring-1 ring-gray-200"
+                      loading="lazy"
+                    />
+                  </td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700"
+                    >
+                      {{ p.category }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="block max-w-[360px] truncate"
+                      :title="p.desc"
+                      >{{ p.desc }}</span
+                    >
+                  </td>
+                  <td class="px-4 py-3">
+                    <button
+                      class="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                      @click="openDetail(p)"
+                    >
+                      Detail
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <Pagination
+        class="mt-4"
+        :total-items="total"
+        v-model:page="page"
+        v-model:pageSize="pageSize"
+        :sibling-count="1"
+        :boundary-count="1"
+        :show-page-size="true"
+        :show-edges="true"
+      />
+    </div>
+  </div>
+
+  <!-- ===== Modal Detail Product ===== -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="duration-150 ease-out"
+      enter-from-class="opacity-0 translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-2"
+    >
+      <div v-if="isDetailOpen" class="fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-black/60" @click="closeDetail"></div>
+
+        <div
+          class="relative mx-auto mt-14 w-[min(680px,92vw)] rounded-2xl bg-white p-5 shadow-xl"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div class="flex items-start gap-4">
+            <img
+              :src="selected?.image"
+              alt=""
+              class="h-28 w-28 rounded-lg object-cover ring-1 ring-gray-200"
+            />
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-900">
+                {{ selected?.title }}
+              </h3>
+              <div class="mt-1 flex flex-wrap items-center gap-2">
+                <span
+                  class="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700"
+                >
+                  {{ selected?.category }}
+                </span>
+                <span class="text-xs font-mono text-gray-500"
+                  >ID: {{ selected?.id }}</span
+                >
+              </div>
+              <div class="mt-2 text-base font-bold text-indigo-600">
+                {{ selected ? fmtIDR(selected.price) : "" }}
+              </div>
+            </div>
+
+            <button
+              class="rounded-md p-2 text-gray-500 hover:bg-gray-100"
+              @click="closeDetail"
+              aria-label="Close"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div class="mt-4">
+            <h4 class="text-sm font-semibold text-gray-800">Description</h4>
+            <p class="mt-1 whitespace-pre-line text-sm text-gray-600">
+              {{ selected?.desc }}
+            </p>
+          </div>
+
+          <div class="mt-6 flex items-center justify-between gap-2">
+            <span class="text-xs text-gray-400">ESC to close</span>
+            <div class="flex gap-2">
+              <button
+                class="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                :disabled="!hasPrev"
+                @click="prev"
+              >
+                Prev
+              </button>
+              <button
+                class="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                :disabled="!hasNext"
+                @click="next"
+              >
+                Next
+              </button>
+              <button
+                class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500"
+                @click="closeDetail"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>

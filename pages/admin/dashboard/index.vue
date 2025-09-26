@@ -14,24 +14,14 @@ const { kpis, labelsDays, seriesOrders, seriesRevenue, recentOrders, topProducts
 <template>
   <div class="mx-auto max-w-7xl space-y-6 px-4 py-4">
     <!-- Breadcrumb (kalau layout belum render global) -->
-    <Breadcrump variant="admin" :max="4" />
+    <div class="flex  px-5 flex-wrap items-center mb-2 justify-between gap-3">
+      <h1 class="text-2xl font-semibold">Dashboard</h1>
+      <Breadcrump variant="admin" :max="4" />
 
+    </div>
     <!-- Header + Filter ringan -->
      <div class="bg-gray-100 container rounded-lg p-2">
-    <div class="flex flex-wrap items-center mb-2 justify-between gap-3">
-      <h1 class="text-2xl font-semibold">Dashboard</h1>
-      <div class="flex items-center gap-2">
-        <select class="rounded-lg border p-2 py-2 text-sm">
-          <option>7 hari</option>
-          <option>30 hari</option>
-          <option>12 bulan</option>
-        </select>
-        <NuxtLink to="/admin/produk/tambah"
-          class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
-          + Produk
-        </NuxtLink>
-      </div>
-    </div>
+
 
     <!-- KPI Cards -->
     <div class="grid gap-4  sm:grid-cols-2 lg:grid-cols-4">

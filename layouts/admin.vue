@@ -3,7 +3,7 @@
 import { ref } from 'vue'
 
 const open = ref(false)
-const logout = () => { navigateTo('/admin/logout') }
+const logout = () => { navigateTo('/auth/login') }
 </script>
 
 <template>

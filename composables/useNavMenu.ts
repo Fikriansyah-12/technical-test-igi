@@ -30,7 +30,7 @@ export function useNavMenu(role: Role, isAuthenticated = false) {
       exact: true,
       icon: "mdi:view-dashboard-outline",
     },
-    { label: "Products", to: "/admin/products", icon: "mdi:package-variant" },
+    { label: "Products", to: "/admin/product", icon: "mdi:package-variant" },
     {
       label: "Orders",
       to: "/admin/orders",
@@ -42,7 +42,6 @@ export function useNavMenu(role: Role, isAuthenticated = false) {
       icon: "mdi:account-multiple-outline",
     },
     { label: "Reports", to: "/admin/reports", icon: "mdi:chart-bar" }, // opsional
-    { label: "Settings", to: "/admin/profile", icon: "mdi:cog-outline" },
   ];
 
   const items = role === "admin" ? adminMenu : userMenu;
