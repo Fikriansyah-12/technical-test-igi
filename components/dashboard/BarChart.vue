@@ -12,9 +12,9 @@ const maxVal = computed(() => Math.max(1, ...props.values))
 </script>
 
 <template>
-  <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+  <div class="rounded-2xl border border-black/20 bg-white p-4 shadow-sm">
     <div class="mb-3 flex items-center justify-between">
-      <slot name="title"><h3 class="text-sm font-medium">Bar Chart</h3></slot>
+      <slot name="title"><h3 class="text-lg text-black font-medium">Bar Chart</h3></slot>
       <slot name="actions"></slot>
     </div>
 

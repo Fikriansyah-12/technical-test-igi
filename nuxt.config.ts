@@ -3,12 +3,15 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
 
   runtimeConfig: {
-    enviroment: "PRODUCTION",
+    enviroment: "LOCAL",
     public: {
-      baseUrl: "",
-      appUrl: "",
+      baseUrl: process.env.NUXT_PUBLIC_API_BASE || '/api',
+      appUrl: process.env.NUXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
       version: "0.0.0",
     },
+  },
+     routeRules: {
+    '/': { redirect: '/auth/login' }, 
   },
 
   app: {
@@ -31,7 +34,7 @@ export default defineNuxtConfig({
         ['defineStore', 'definePiniaStore'],
       ],
     }],
-    '@nuxt/eslint', // <-- hanya ini untuk ESLint
+    '@nuxt/eslint',
   ],
 
   css: ['~/assets/css/main.css'],
@@ -47,5 +50,5 @@ export default defineNuxtConfig({
     transpile: ['gsap'],
   },
 
-  compatibilityDate: "2024-11-01",
+  compatibilityDate: "2025-10-25",
 })
