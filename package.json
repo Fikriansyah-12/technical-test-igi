@@ -16,7 +16,6 @@
     "@nuxt/devtools": "latest",
     "@nuxt/eslint": "0.7.5",
     "@nuxt/eslint-config": "^0.7.5",
-    "@nuxtjs/eslint-module": "^4.1.0",
     "@types/node": "^18.19.74",
     "@types/numeral": "^2.0.5",
     "autoprefixer": "^10.4.20",

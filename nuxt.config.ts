@@ -14,32 +14,25 @@ export default defineNuxtConfig({
   app: {
     head: {
       meta: [
-        { "http-equiv": "X-UA-Compatible", content: "IE=edge"},
-        { name: "viewport", content: "width=device-width, initial-scale=1.0, shrink-to-fit=no"},
+        { "http-equiv": "X-UA-Compatible", content: "IE=edge" },
+        { name: "viewport", content: "width=device-width, initial-scale=1.0, shrink-to-fit=no" },
       ],
-      htmlAttrs: {
-        lang: "en"
-      },
+      htmlAttrs: { lang: "en" },
       charset: "utf-8",
       link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
     },
   },
 
-  modules: [[
-    '@pinia/nuxt',
-    {
+  // Pakai format pasangan [module, options] TANPA nested array bercampur
+  modules: [
+    ['@pinia/nuxt', {
       autoImports: [
         'defineStore',
         ['defineStore', 'definePiniaStore'],
       ],
-    },
-  ], [
-    '@nuxtjs/eslint-module', 
-    {
-      failOnError: true,
-      formatter: 'unix',
-    }
-  ], "@nuxt/eslint"],
+    }],
+    '@nuxt/eslint', // <-- hanya ini untuk ESLint
+  ],
 
   css: ['~/assets/css/main.css'],
 
@@ -49,8 +42,9 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
-  build : {
-    transpile: ['gsap']
+
+  build: {
+    transpile: ['gsap'],
   },
 
   compatibilityDate: "2024-11-01",
