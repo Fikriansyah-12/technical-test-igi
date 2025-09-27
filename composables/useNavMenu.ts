@@ -32,16 +32,10 @@ export function useNavMenu(role: Role, isAuthenticated = false) {
     },
     { label: "Products", to: "/admin/product", icon: "mdi:package-variant" },
     {
-      label: "Orders",
-      to: "/admin/orders",
-      icon: "mdi:clipboard-text-outline",
-    },
-    {
       label: "Users",
       to: "/admin/users",
       icon: "mdi:account-multiple-outline",
     },
-    { label: "Reports", to: "/admin/reports", icon: "mdi:chart-bar" }, // opsional
   ];
 
   const items = role === "admin" ? adminMenu : userMenu;

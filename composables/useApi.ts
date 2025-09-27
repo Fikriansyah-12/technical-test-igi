@@ -12,25 +12,22 @@ type Response<T> = {
 export const useApi = definePiniaStore("api", () => {
   const config = useRuntimeConfig();
   const axios = Axios;
-  const snackbar = useSnackbar();
 
-  // const userData = useUserData();
-  // const auth = useAuth();
+  const snackbar = useSnackbar();
+  const userData = useUserData();
+  const auth = useAuth();
 
   axios.defaults.baseURL = config.public.baseUrl;
 
   setHeader();
 
   function setHeader() {
-    // const route = useRoute();
-    
     axios.defaults.headers.common["Accept"] = "application/json";
     axios.defaults.headers.common["Content-Type"] = "application/json";
-
-    // const token = route.query.token?.toString() || useUserData().value.token;
-    // if (token) {
-    //   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    // }
+    if (userData.value.token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${userData.value.token}`;
+    }
+    // axios.defaults.headers.common["lang"] = "en";
   }
 
   function get<T>({url, params = {}}: Request): Promise<Response<T>> {
@@ -135,13 +132,13 @@ export const useApi = definePiniaStore("api", () => {
         title: "Session Expired",
         message: "Please try logging in again",
         buttonText: "Continue",
-        // callback: () => {
-        //   auth.logout({
-        //     callback() {
-        //       navigateTo("/auth/login", { external: true });
-        //     },
-        //   });
-        // },
+        callback: () => {
+          auth.logout({
+            callback() {
+              navigateTo("/auth/login", { external: true });
+            },
+          });
+        },
       });
       handled = true;
     } else if (error.response?.status == 400) {
@@ -174,4 +171,3 @@ export const useApi = definePiniaStore("api", () => {
     uploadFile,
   };
 });
-
