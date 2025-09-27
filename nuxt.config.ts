@@ -34,7 +34,7 @@ export default defineNuxtConfig({
         ['defineStore', 'definePiniaStore'],
       ],
     }],
-    '@nuxt/eslint',
+    '@nuxt/eslint','@nuxt/image'
   ],
 
   css: ['~/assets/css/main.css'],

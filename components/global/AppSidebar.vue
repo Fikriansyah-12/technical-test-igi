@@ -47,7 +47,7 @@ watch(
 
   <!-- SIDEBAR -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-64 shrink-0 border-r border-gray-200 bg-white/90 backdrop-blur bg-gray-800 transform transition-transform duration-200 -translate-x-full lg:translate-x-0"
+    class="fixed inset-y-0 left-0 z-50 w-64 shrink-0 border-r border-gray-200 backdrop-blur bg-gray-800 transform transition-transform duration-200 -translate-x-full lg:translate-x-0"
     :class="open ? 'translate-x-0' : ''"
   >
     <!-- Brand / Header -->
