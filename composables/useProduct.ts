@@ -16,7 +16,6 @@ export const useProduct = defineStore('product', {
     product: null as Product | null,
     loading: false as boolean,
     error: null as string | null,
-    form: {} as any,
   }),
   actions: {
     async getProducts() {
@@ -106,9 +105,9 @@ async deleteProduct(id: number | string) {
   this.error = null
   this.loading = true
   try {
-    await api.del({ url: `/products/${id}` })
+    await api.del({ url: `/products/${id}` }) 
     const idNum = Number(id)
-    this.products = this.products.filter(p => p.id !== idNum)
+    this.products = this.products.filter(product => product.id !== idNum)
     if (this.product?.id === idNum) this.product = null
     return true
   } catch (err: any) {
