@@ -59,11 +59,21 @@ export const useApi = definePiniaStore("api", () => {
     setHeader();
     return new Promise((resolve, reject) => {
       axios
-        .put(url, params) // ← perbaiki: PUT benar-benar pakai axios.put
+        .put(url, params)
         .then((response) => resolve({ data: unwrap<T>(response), response }))
         .catch((error) => reject(error));
     });
   }
+
+  function del<T>({url, params = {}}: Request): Promise<Response<T>> {
+  setHeader();
+  return new Promise((resolve, reject) => {
+    axios
+      .delete(url, { params })
+      .then((response) => resolve({ data: response.data, response }))
+      .catch((error) => reject(error));
+  });
+}
 
   function uploadFile({ url, params = {} }: Request) {
     const formData = new FormData();
@@ -134,5 +144,5 @@ export const useApi = definePiniaStore("api", () => {
     return handled;
   }
 
-  return { get, post, put, uploadFile, handleError };
+  return { get, post, put,del, uploadFile, handleError };
 });

@@ -3,7 +3,7 @@ import type { TProduct } from "~/types/apiResponse";
 export type Product = {
   id: number;
   title: string;
-  price: string;
+  price: number;
   description: string;
   category: string;
   image: string;
