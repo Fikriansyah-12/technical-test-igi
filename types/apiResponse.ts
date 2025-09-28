@@ -8,7 +8,7 @@ export type TUser = {
 export type TCart = {
   id:number;
   userId: number;
-  product: TProduct // ini dari product
+  products: TProduct 
 }
 
 export type TProduct = {
@@ -17,5 +17,10 @@ export type TProduct = {
   price: string;
   description: string;
   category: string;
-  iamge: string;
+  image: string;
+}
+
+export type TUserAuth = {
+  token: string;
+  user: TUser;
 }

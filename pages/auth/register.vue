@@ -1,49 +1,40 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { navigateTo } from '#app'
+import { ref } from 'vue'
+import { useAuth } from '~/composables/useAuth' 
+
+const auth = useAuth()
 
 const loading = ref(false)
 const showPassword = ref(false)
 const errorMsg = ref<string | null>(null)
 
-const form = reactive({
-  usename:'',
-  email: '',
-  password: '',
-  remember: false,
-})
-
-const emailOk = (v: string) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
-
-const username = (v: string) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
-
+// VALIDATION
+const usernameOk = (v: string) => /^[a-zA-Z0-9_.-]{4,}$/.test(v) 
+const emailOk    = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 const passwordOk = (v: string) => v.length >= 6
 
 const onSubmit = async (e: Event) => {
   e.preventDefault()
   errorMsg.value = null
-    if (!username(form.usename)) {
-    errorMsg.value = 'Username minimal 8 karakter. '
-    return
-  }
 
-  if (!emailOk(form.email)) {
-    errorMsg.value = 'Alamat email tidak valid.'
+  if (!usernameOk(auth.form.username)) {
+    errorMsg.value = 'Username must be at least 4 characters (letters, numbers, . _ -).'
     return
   }
-  if (!passwordOk(form.password)) {
-    errorMsg.value = 'Password minimal 6 karakter.'
+  if (!emailOk(auth.form.email)) {
+    errorMsg.value = 'Invalid email address.'
+    return
+  }
+  if (!passwordOk(auth.form.password)) {
+    errorMsg.value = 'Password must be at least 6 characters.'
     return
   }
 
   loading.value = true
   try {
-    await new Promise(r => setTimeout(r, 900))
-    navigateTo('/dashboard')
-  } catch (err) {
-    errorMsg.value = 'Login gagal. Coba lagi.'
+    await auth.register() 
+  } catch (err: any) {
+    errorMsg.value = err?.message || 'Registration failed. Please try again.'
   } finally {
     loading.value = false
   }
@@ -62,33 +53,37 @@ const onSubmit = async (e: Event) => {
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
             alt="Brand"
           />
-          <p class="brand-subtitle">Sign up to continue</p>
+          <p class="brand-subtitle">Create your account</p>
         </div>
 
-        <form class="form" @submit="onSubmit">
+        <form class="form" @submit="onSubmit" novalidate>
+          <!-- Username -->
           <div class="form-group">
-            <label for="email">Username</label>
+            <label for="username">Username</label>
             <input
-              id="email"
-              type="email"
-              v-model="form.email"
-              placeholder="jhon doe"
-              autocomplete="email"
+              id="username"
+              type="text"
+              v-model.trim="auth.form.username"
+              placeholder="johndoe"
+              autocomplete="username"
               required
             />
           </div>
-            <div class="form-group">
+
+          <!-- Email -->
+          <div class="form-group">
             <label for="email">Email address</label>
             <input
               id="email"
               type="email"
-              v-model.trim="form.email"
+              v-model.trim="auth.form.email"
               placeholder="you@example.com"
               autocomplete="email"
               required
             />
           </div>
 
+          <!-- Password -->
           <div class="form-group">
             <div class="label-row">
               <label for="password">Password</label>
@@ -100,30 +95,27 @@ const onSubmit = async (e: Event) => {
               <input
                 id="password"
                 :type="showPassword ? 'text' : 'password'"
-                v-model="form.password"
+                v-model="auth.form.password"
                 placeholder="••••••••"
-                autocomplete="current-password"
+                autocomplete="new-password"
                 required
               />
             </div>
+            <p class="hint">Use at least 6 characters.</p>
           </div>
 
-          <div class="form-row">
-            <label class="checkbox">
-              <input type="checkbox" v-model="form.remember" />
-              <span>Remember me</span>
-            </label>
-            <a href="/auth/forgot" class="ghost-link">Forgot password?</a>
-          </div>
-
-          <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
+          <p v-if="errorMsg" class="error" aria-live="polite">{{ errorMsg }}</p>
 
           <button class="btn-primary" :disabled="loading">
-            <span v-if="!loading">Sign in</span>
+            <span v-if="!loading">Sign up</span>
             <span v-else class="spinner" aria-label="Loading"></span>
           </button>
+
+          <p class="alt text-sm text-gray-500 mt-3">
+            Already have an account?
+            <NuxtLink class="ghost-link" to="/auth/login">Sign in</NuxtLink>
+          </p>
         </form>
-       
       </div>
     </div>
   </div>

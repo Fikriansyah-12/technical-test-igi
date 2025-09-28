@@ -1,139 +1,110 @@
 import { useLocalStorage } from "@vueuse/core";
-import type { AxiosError } from "axios";
-import { mapJsonToUser, type User } from "~/models/User";
-import { mapJsonToUserAuth, type UserAuth } from '~/models/UserAuth';
-import type { TUser, TUserAuth } from "~/types/apiResponse";
+import { defineStore } from "pinia";
+import { mapJsonToUser, type User } from "~/models/User"; 
+import type { TUser } from "~/types/apiResponse";         
 
 type Callback = () => void;
+type LogoutParameters = { callback?: Callback | null; next?: string };
 
-type LogoutParameters = {
-  callback?: Callback | null;
-  next?: string;
-};
-
-export enum AuthResponseCode {
-  // EMAIL_IS_EXISTS = 200,
-  // USER_NOT_EXISTS = 10,
-  USER_NOT_FOUND = 400,
-  USER_IS_BANNED = 20,
-}
-
-export const useUserData = () => {
-  return useLocalStorage("user_data", {} as UserAuth);
-}
+export const useUserData = () =>
+  useLocalStorage<{ token: string | null; user: User | null }>("user_data", {
+    token: null,
+    user: null,
+  });
 
 export const useAuth = defineStore("auth", {
   state: () => ({
-    token: <string | null>null,
-    user: <User | null>null,
+    token: null as string | null,
+    user: null as User | null,
     form: {
-      phone: <string>"",
-      otpCode: <string>""
+      username: "" as string,
+      email: "" as string,
+      password: "" as string,
     },
-    revealSection: <boolean>false
+    revealSection: false as boolean,
   }),
-  actions: {
-    async loginWithPhone() {
-      const api = useApi();
-      const _loading = useLoading();
-      const _snackbar = useSnackbar();
-      const _dialog = useDialog();
 
-      if(this.form.phone === "" || this.form.phone.length <= 6) {
-        _snackbar.error({
-          title: "Invalid Phone Number",
-          message: "Please enter a valid phone number.",
-          buttonText: "Retry"
-        });
+  actions: {
+    async register() {
+      const api = useApi();
+      const _loading = (globalThis as any).useLoading?.();
+      const _snackbar = (globalThis as any).useSnackbar?.();
+
+      if (!this.form.username || !this.form.email || !this.form.password) {
+        _snackbar?.error?.({ title: "Missing fields", message: "Fill username, email, and password." });
         return;
       }
 
       try {
-        _loading.show();
+        _loading?.show?.();
+        const body = {
+          email: this.form.email,
+          username: this.form.username,
+          password: this.form.password,
+        };
 
-        await api.post({
-          url: "/api/web/auth/login-using-hwg",
-          params: {
-            phone_number: this.form.phone
-          }
-        });
+        const { data: created } = await api.post<any>({ url: "/users", params: body });
 
-        _loading.hide();
-        navigateTo("/auth/verify");
-      } catch (error) {
-        // api.handleError(error);
-        const err = error as AxiosError;
+        this.setUser(
+          mapJsonToUser({
+            id: created.id,
+            username: created.username,
+            email: created.email ?? "",
+            password: "",
+          } as TUser)
+        );
 
-        // if user is not found with entered phone number
-        if(err.response?.status === AuthResponseCode.USER_NOT_FOUND) {
-          _dialog.show({
-            title: "Cannot find user",
-            content: "User not found with this phone number",
-            confirmText: "Register",
-            backText: "Try Again",
-            callback: {
-              onTapBack() {
-                _dialog.hideDialog();
-              },
-              onTapConfirm() {
-                navigateTo("/auth/register");
-                _dialog.hideDialog();
-              },
-            },
-          });
-        }
-        _loading.hide();
+        _snackbar?.success?.({ title: "Registered", message: "User created." });
+        navigateTo("/auth/login");
+      } catch (e) {
+        api.handleError(e);
+      } finally {
+        _loading?.hide?.();
       }
     },
-    async verifyPhoneNumber() {
-      const api = useApi();
-      const _loading = useLoading();
 
-      _loading.show();
-      try {
-        const { response } = await api.post({
-          url: "/api/web/auth/login-using-hwg-confirmation", 
-          params: {
-            phone_number: this.form.phone,
-            confirmation_code: this.form.otpCode,
-          }
-        });
+async loginWithCredentials() {
+  const api = useApi()
+  const _snackbar = (globalThis as any).useSnackbar?.()
 
-        _loading.hide();
+  if (!this.form.username || !this.form.password) {
+    _snackbar?.error?.({ title: 'Missing credentials', message: 'Enter username & password.' })
+    return
+  }
 
-        // set user data
-        this.setUserData(response.data.data);
-        navigateTo("/profile/my-account", { external: true });
+  try {
+    const { data: login } = await api.post<{ token: string }>({
+      url: '/auth/login',
+      params: { username: this.form.username, password: this.form.password }
+    })
+    await this.setToken(login.token)
 
-        this.$reset();
-      } catch (error) {
-        _loading.hide();
-        api.handleError(error);
-      }
-    },
-    setUserData(apiResponse: TUserAuth) {
-      const userData = useUserData();
-      userData.value = mapJsonToType(apiResponse, mapJsonToUserAuth);
-    },
-    async getProfile() {
-      const api = useApi();
+    const { data: users } = await api.get<any[]>({ url: '/users' })
+    const found = users.find(u => u.username === this.form.username)
+    if (found) {
+      this.setUser(mapJsonToUser({
+        id: found.id, username: found.username, email: found.email ?? '', password: ''
+      } as TUser))
+    }
 
-      try {
-        const { response } = await api.get<TUser>({
-          url: "/api/web/users/profile"
-        })
+    navigateTo('/admin/users')
+    this.form.username = ''
+    this.form.password = ''
+  } catch (e: any) {
+    const status = e?.response?.status
+    const msg = e?.response?.data?.message
+    if (status === 401) {
+      _snackbar?.error?.({ title: 'Login failed', message: 'Username or password is incorrect.' })
+      return
+    }
+    useApi().handleError(e)
+  }
+},
 
-        this.user = mapJsonToType(response.data.data, mapJsonToUser);
-        this.revealSection = true;
 
-        return this.user;
-      } catch (error) {
-        api.handleError(error);
-      }
-    },
     async setToken(token: string) {
       const userData = useUserData();
-      userData.value.token = await token;
+      userData.value.token = token;
       this.refresh();
     },
     setUser(user: User) {
@@ -148,24 +119,17 @@ export const useAuth = defineStore("auth", {
     },
     isLoggedIn(): boolean {
       this.refresh();
-
-      if(!this.token) return false;
-      return true;
+      return !!this.token;
     },
     logout({ callback = null, next = "" }: LogoutParameters) {
       const userData = useUserData();
-      userData.value = {
-        token: null,
-        user: null,
-      }
-
+      userData.value = { token: null, user: null };
       this.refresh();
       if (callback) {
         callback();
         return;
       }
-
       if (next) navigateTo(next);
-    }
-  }
+    },
+  },
 });

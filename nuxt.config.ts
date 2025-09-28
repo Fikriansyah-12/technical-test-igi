@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     enviroment: "LOCAL",
     public: {
-      baseUrl: process.env.NUXT_PUBLIC_API_BASE || '/api',
+      baseUrl: process.env.NUXT_PUBLIC_BASE_URL || 'https://fakestoreapi.com',
       appUrl: process.env.NUXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
       version: "0.0.0",
     },
