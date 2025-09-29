@@ -73,26 +73,37 @@ async loginWithCredentials() {
   }
 
   try {
+    // 1) login ke FakeStore
     const { data: login } = await api.post<{ token: string }>({
       url: '/auth/login',
-      params: { username: this.form.username, password: this.form.password }
+      params: { username: this.form.username, password: this.form.password },
     })
     await this.setToken(login.token)
 
+    // 2) ambil user list lalu simpan user yg cocok
     const { data: users } = await api.get<any[]>({ url: '/users' })
-    const found = users.find(u => u.username === this.form.username)
+    const found = users.find((u) => u.username === this.form.username)
     if (found) {
-      this.setUser(mapJsonToUser({
-        id: found.id, username: found.username, email: found.email ?? '', password: ''
-      } as TUser))
+      this.setUser(
+        mapJsonToUser({
+          id: found.id,
+          username: found.username,
+          email: found.email ?? '',
+          password: '',
+        } as TUser)
+      )
     }
 
-    navigateTo('/admin/users')
+    const uname = this.form.username.trim().toLowerCase()
+    const isUser = uname === 'johnd' 
+
+    navigateTo(isUser ? '/products' : '/admin/users', { replace: true })
+
+    // bersihkan form
     this.form.username = ''
     this.form.password = ''
   } catch (e: any) {
     const status = e?.response?.status
-    const msg = e?.response?.data?.message
     if (status === 401) {
       _snackbar?.error?.({ title: 'Login failed', message: 'Username or password is incorrect.' })
       return

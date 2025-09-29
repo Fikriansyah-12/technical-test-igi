@@ -12,15 +12,7 @@ export interface NavItem {
 
 export function useNavMenu(role: Role, isAuthenticated = false) {
   const userMenu: NavItem[] = [
-    { label: "Beranda", to: "/", exact: true },
-    { label: "Kategori", to: "/categori" },
-    { label: "Produk", to: "/produk" },
-    { label: "Promo", to: "/promo" },
-    {
-      label: "Pesanan Saya",
-      to: isAuthenticated ? "/akun/pesanan" : "/auth/login",
-      show: true,
-    },
+
   ];
 
   const adminMenu: NavItem[] = [
