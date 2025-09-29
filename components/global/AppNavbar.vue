@@ -82,7 +82,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', kb))
             </svg>
           </button>
 
-          <NuxtLink to="/" class="flex items-center gap-2">
+          <NuxtLink to="/products" class="flex items-center gap-2">
             <span class="text-lg font-semibold">MyCommerce</span>
             <span v-if="role==='admin'" class="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Admin</span>
           </NuxtLink>

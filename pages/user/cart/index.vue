@@ -120,7 +120,7 @@ const checkout = () => router.push('/user/checkout')
         </table>
 
         <div class="flex items-center justify-between pt-4">
-          <NuxtLink to="/user/product" class="text-sm text-indigo-600 hover:text-indigo-500">← Continue shopping</NuxtLink>
+          <NuxtLink to="/products" class="text-sm text-indigo-600 hover:text-indigo-500">← Continue shopping</NuxtLink>
           <div class="text-right">
             <div class="text-sm text-gray-500">Subtotal</div>
             <div class="text-xl font-bold text-indigo-700">{{ fmtIDR(cart.subtotal) }}</div>

@@ -29,7 +29,7 @@ const placeOrder = async () => {
 
 <template>
   <div class="mx-auto max-w-5xl px-4 py-6 space-y-6">
-    <NuxtLink to="/cart" class="text-sm text-indigo-600 hover:text-indigo-500">← Back to cart</NuxtLink>
+    <NuxtLink to="/user/cart" class="text-sm text-indigo-600 hover:text-indigo-500">← Back to cart</NuxtLink>
     <h1 class="text-2xl font-semibold">Checkout</h1>
 
     <div v-if="cart.isEmpty" class="text-gray-500">
